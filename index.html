@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Chat App</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+        integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <style>
+        #chat-window {
+            height: 200px;
+            overflow-y: scroll;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        #message {
+            height: 50px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <div id="chat-window"></div>
+                <textarea id="message" class="form-control"></textarea>
+                <button id="send-message" class="btn btn-primary">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const chatWindow = document.getElementById('chat-window');
+        const messageInput = document.getElementById('message');
+        const sendMessageButton = document.getElementById('send-message');
+
+        let partnerId = null;
+
+        socket.on('start-chat', (data) => {
+            partnerId = data.with;
+            chatWindow.innerHTML = 'Chat started';
+        });
+
+        socket.on('message-received', (data) => {
+            chatWindow.innerHTML += `\n${data.from}: ${data.message}`;
+        });
+
+        sendMessageButton.addEventListener('click', () => {
+            if (!partnerId) {
+                chatWindow.innerHTML = 'No active chat';
+                return;
+            }
+
+            socket.emit('send-message', {
+                to: partnerId,
+                message: messageInput.value
+            });
+        });
+    </script>
+    <script src="app.js"></script>
+</body>
+
+</html>
